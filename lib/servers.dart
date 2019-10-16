@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:server_tracker/server.dart';
 import 'dart:convert';
-
 import 'process.dart';
 import 'processes.dart';
 
