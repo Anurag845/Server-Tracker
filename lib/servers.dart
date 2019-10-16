@@ -16,8 +16,10 @@ class _ServersState extends State<Servers> {
   bool isData = false;
   List data = List();
   int totact = 0;
+  int highcnt = 0;
   Set<String> servers = Set<String>();
   List<Server> srvs = List<Server>();
+  List<Process> highpro = List<Process>();
 
   _retrieve() async {
     var response = await http.post("http://192.168.43.18/Server_Tracker/servers.php");
@@ -39,6 +41,16 @@ class _ServersState extends State<Servers> {
               pro.add(new Process(data[j]["pid"],data[j]["duration"],data[j]["datname"],data[j]["?column?"]));
               String d = data[j]["duration"];
               dur.add(d);
+            }
+          }
+          String duration = data[i]["duration"];
+          List<String> parts = duration.split(":");
+          double seconds = 0;
+          if(parts.length > 2) {
+            seconds = double.parse(parts[2]);
+            if(seconds > 2) {
+              highcnt++;
+              highpro.add(new Process(data[i]["pid"],data[i]["duration"],data[i]["datname"],data[i]["?column?"]));
             }
           }
           dur.sort((a,b) => a.compareTo(b));
@@ -66,7 +78,17 @@ class _ServersState extends State<Servers> {
         ),
         Padding(
           padding: EdgeInsets.all(10),
-          child: Text("Highest Queries: "),
+          child: InkWell(
+            child: Text("Highest Queries: " + highcnt.toString()),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Processes(hostname: "", processes: highpro),
+                ),
+              );
+            },
+          ),
         ),
         Expanded(
           child: ListView.builder(
@@ -112,8 +134,7 @@ class _ServersState extends State<Servers> {
               );
             }
           ),
-        )
-        
+        ),
       ],
     );
   }
@@ -124,6 +145,20 @@ class _ServersState extends State<Servers> {
       appBar: AppBar(
         title: Text("Servers"),
         backgroundColor: Colors.black,
+        actions: <Widget>[
+          IconButton(
+            padding: EdgeInsets.all(5),
+            icon: Icon(
+              Icons.autorenew,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                _retrieve();
+              });
+            }
+          ),
+        ],
       ),
       body: !isData ? new Center(
               child: new CircularProgressIndicator(),
